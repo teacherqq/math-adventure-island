@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>乘除法冒险岛 🏝️</title>
+<style>
+  :root{
+    --pink:#ff8fab; --purple:#a186ff; --blue:#6ec1ff; --yellow:#ffd166;
+    --green:#7ee081; --orange:#ff9e5e; --bg1:#fff0f6; --bg2:#e8f4ff; --bg3:#fff9e8;
+    --ink:#4a3b5c; --card:#ffffff;
+    --kai:"Kaiti SC","STKaiti","KaiTi","KaiTi_GB2312","楷体","TW-Kai","DFKai-SB","BiauKai",serif;
+    --latin:"Avenir Next","Trebuchet MS","Segoe UI",system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+  body{
+    font-family:var(--kai);
+    color:var(--ink);
+    background:linear-gradient(160deg,var(--bg1) 0%,var(--bg3) 40%,var(--bg2) 100%);
+    min-height:100vh;overflow-x:hidden;
+  }
+  /* ---------- 英文解释：小号拉丁字体，浅灰，中文下方 ---------- */
+  .en{display:block;font-family:var(--latin);font-size:.6em;line-height:1.3;font-weight:600;
+    color:#a99cc0;letter-spacing:.2px;margin-top:2px;}
+  .en.inline{display:inline;margin:0 0 0 6px;font-size:.66em;}
+  .btn .en{color:rgba(255,255,255,.92);}
+  .btn.ghost .en{color:#b3a6c9;}
+  .btn.small .en{font-size:10.5px;}
+  .bubble .en{font-size:12px;}
+  .node-label .en{font-size:11px;}
+  .tab .en{font-size:11px;}
+  .table-note .en,.footer-note .en{font-size:11px;color:#c3b6d8;}
+  .tap-hint .en{font-size:11.5px;}
+  .subtitle .en{font-size:12px;}
+  .q-feedback .en{font-size:12px;color:#b3a6c9;}
+  .q-feedback.good .en{color:#8ccfa8;}
+  .q-feedback.bad .en{color:#e9a7a7;}
+  .slot-name .en{font-size:8.5px;color:#c3b6d8;margin-top:0;line-height:1.1;}
+  .q-en{font-family:var(--latin);font-size:15px;font-weight:600;color:#a99cc0;
+    letter-spacing:.3px;margin-top:2px;}
+  /* ---------- floating background decorations ---------- */
+  .float-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .float-bg span{position:absolute;font-size:34px;opacity:.35;animation:floaty 8s ease-in-out infinite;}
+  @keyframes floaty{0%,100%{transform:translateY(0) rotate(-6deg);}50%{transform:translateY(-26px) rotate(8deg);}}
+
+  .app{position:relative;z-index:1;width:100%;max-width:1240px;margin:0 auto;padding:16px 14px 60px;}
+
+  /* ---------- iPad / 宽屏适配 ---------- */
+  @media (min-width:768px){
+    .app{padding:22px 28px 70px;}
+    .avatar{width:54px;height:54px;}
+    .tb-name b{font-size:19px;}
+    .tb-stat b{font-size:22px;}
+    .icon-btn{width:48px;height:48px;font-size:24px;border-radius:16px;}
+    h1.title{font-size:38px;}
+    .btn{font-size:23px;padding:19px;border-radius:26px;}
+    .row .btn{font-size:18px;}
+    .btn.small{font-size:16px;padding:11px 16px;}
+    .hero .mascot{width:130px;height:130px;}
+    .bubble{font-size:17px;padding:12px 18px;}
+    .card{border-radius:30px;padding:24px;}
+    /* 答题页放大居中 */
+    .q-card{max-width:780px;margin:16px auto 0;padding:40px 24px 34px;}
+    .quiz-head,.dots{max-width:780px;margin-left:auto;margin-right:auto;}
+    .q-text{font-size:64px;}
+    .q-mascot{width:70px;height:70px;}
+    .q-en{font-size:19px;}
+    .q-feedback{font-size:20px;min-height:56px;}
+    .choices{max-width:780px;margin:20px auto 0;gap:16px;}
+    .choice{font-size:40px;padding:28px 8px;border-radius:26px;}
+    .day-chip,.combo-chip{font-size:17px;padding:10px 18px;}
+    .dot{width:20px;height:20px;}
+    .dots{margin:20px 0 6px;}
+    /* 结果页放大 */
+    #scr-result .card{max-width:680px;margin:24px auto 0;}
+    .chest{font-size:140px;}
+    .sticker-reveal{width:220px;height:220px;}
+    .result-stars{font-size:68px;}
+    /* 收藏册 */
+    #scr-album .card{max-width:900px;margin:20px auto 0;}
+    .album-grid{grid-template-columns:repeat(6,1fr);gap:14px;}
+    .sticker-slot{border-radius:22px;padding:13% 13% 20%;}
+    .slot-name{font-size:11px;bottom:5px;}
+    /* 表格放大、完全展开 */
+    .home-tables{grid-column:1 / -1;}
+    .math-table{gap:6px;}
+    .mt-head{font-size:16px;border-radius:12px;}
+    .mt-cell{font-size:20px;border-radius:12px;}
+    .mt-cell.square:after{font-size:11px;top:2px;right:5px;}
+    .div-table{gap:8px;}
+    .div-row-label{font-size:16px;margin-top:10px;}
+    .div-chip{font-size:16px;padding:10px 2px;border-radius:14px;}
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{display:flex;align-items:center;gap:10px;background:var(--card);
+    border-radius:20px;padding:10px 14px;box-shadow:0 6px 18px rgba(161,134,255,.18);
+    position:sticky;top:8px;z-index:50;}
+  .avatar{width:46px;height:46px;flex:0 0 auto;animation:bounce 2.4s infinite;}
+  @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+  .tb-name{flex:1;min-width:0;}
+  .tb-name b{font-size:16px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tb-name small{color:#9a8fb0;font-size:12px;}
+  .tb-stat{display:flex;flex-direction:column;align-items:center;font-size:12px;color:#9a8fb0;}
+  .tb-stat b{font-size:18px;color:var(--ink);}
+  .icon-btn{border:none;background:#f4efff;border-radius:14px;width:40px;height:40px;font-size:20px;cursor:pointer;transition:.2s;}
+  .icon-btn:active{transform:scale(.9);}
+
+  /* ---------- generic screens ---------- */
+  .screen{display:none;animation:fadeIn .35s;}
+  .screen.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+
+  .card{background:var(--card);border-radius:26px;padding:20px;margin-top:16px;
+    box-shadow:0 8px 24px rgba(161,134,255,.14);}
+
+  h1.title{text-align:center;font-size:30px;margin:18px 0 4px;letter-spacing:2px;}
+  .subtitle{text-align:center;color:#9a8fb0;font-size:14px;margin-bottom:6px;}
+
+  /* ---------- start / map ---------- */
+  .hero{ text-align:center;margin-top:14px;}
+  .hero .mascot{width:112px;height:112px;animation:bounce 2.6s ease-in-out infinite;display:inline-block;
+    filter:drop-shadow(0 8px 12px rgba(255,170,60,.35));}
+  .bubble{position:relative;background:#fff;border-radius:18px;padding:10px 16px;display:inline-block;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);font-size:15px;margin-top:8px;}
+  .bubble:after{content:"";position:absolute;top:-8px;left:50%;margin-left:-8px;
+    border:8px solid transparent;border-bottom-color:#fff;border-top:0;}
+
+  .day-progress{display:flex;justify-content:space-between;align-items:center;
+    background:linear-gradient(90deg,#ffe3ee,#e6f0ff);border-radius:18px;padding:12px 16px;margin-top:16px;}
+  .day-progress .big{font-size:22px;font-weight:800;}
+  .progress-track{height:14px;background:#fff;border-radius:99px;overflow:hidden;flex:1;margin:0 12px;}
+  .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--yellow));
+    transition:width .6s;position:relative;}
+  .progress-fill:after{content:"";position:absolute;inset:3px 3px auto;height:4px;background:rgba(255,255,255,.55);border-radius:99px;}
+
+  .btn{display:block;width:100%;border:none;cursor:pointer;font-family:inherit;
+    background:linear-gradient(135deg,#ff8fab,#a186ff);color:#fff;font-size:20px;font-weight:800;
+    padding:16px;border-radius:22px;box-shadow:0 8px 20px rgba(255,143,171,.45);
+    transition:.15s;letter-spacing:1px;}
+  .btn:active{transform:scale(.96);}
+  .btn.green{background:linear-gradient(135deg,#57d98e,#39b7f0);box-shadow:0 8px 20px rgba(87,217,142,.4);}
+  .btn.small{font-size:15px;padding:10px;border-radius:16px;width:auto;display:inline-block;}
+
+  .map{margin-top:20px;position:relative;}
+  .map-path{position:absolute;top:0;bottom:0;left:50%;width:10px;transform:translateX(-50%);
+    background:repeating-linear-gradient(180deg,#e7ddff 0 14px,#f6f1ff 14px 28px);
+    border-radius:99px;z-index:0;}
+  .day-node{position:relative;z-index:1;display:flex;align-items:center;margin:10px 0;}
+  .day-node.left{justify-content:flex-start;}
+  .day-node.right{justify-content:flex-end;}
+
+  /* ---------- 宽屏：首页左右分栏 + 地图三列 ---------- */
+  .home-grid{display:grid;grid-template-columns:1fr;gap:0;}
+  @media (min-width:900px){
+    .home-grid{grid-template-columns:440px 1fr;gap:0 28px;align-items:start;}
+    .map{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;position:static;margin-top:14px;}
+    .map-path{display:none;}
+    .day-node{margin:0;justify-content:center !important;}
+    .day-node.left .node-label,.day-node.right .node-label{display:none;}
+    .node{width:92px;height:92px;}
+    .node .stk-box{width:58px;height:58px;}
+    .node .e{font-size:30px;}
+    .node .d{font-size:15px;}
+  }
+  .node{width:88px;height:88px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    cursor:pointer;transition:.2s;background:#fff;box-shadow:0 6px 14px rgba(161,134,255,.18);border:4px solid #eee6ff;}
+  .node .d{font-size:13px;font-weight:700;color:#9a8fb0;}
+  .node .e{font-size:26px;line-height:1.1;}
+  .node.done{border-color:var(--green);background:linear-gradient(160deg,#f0fff2,#e2fbff);}
+  .node.done .d{color:#3aa76d;}
+  .node.now{border-color:var(--yellow);animation:pulse 1.6s infinite;background:linear-gradient(160deg,#fff8e0,#fff0f5);}
+  .node.now .d{color:#c98a00;}
+  .node.locked{opacity:.55;filter:grayscale(.5);cursor:not-allowed;}
+  .node:active{transform:scale(.92);}
+  .node-stars{font-size:11px;letter-spacing:1px;margin-top:1px;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,209,102,.55);}50%{box-shadow:0 0 0 14px rgba(255,209,102,0);}}
+  .node-label{margin:0 12px;font-size:14px;font-weight:700;color:#8d7fa8;background:#ffffffcc;
+    padding:6px 12px;border-radius:12px;box-shadow:0 3px 8px rgba(0,0,0,.06);}
+
+  /* ---------- quiz ---------- */
+  .quiz-head{display:flex;align-items:center;gap:10px;margin-top:14px;}
+  .day-chip{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;border-radius:16px;
+    padding:8px 14px;font-weight:800;font-size:14px;box-shadow:0 4px 10px rgba(161,134,255,.35);}
+  .combo-chip{background:linear-gradient(135deg,#ff9e5e,#ff6b6b);color:#fff;border-radius:16px;
+    padding:8px 14px;font-weight:800;font-size:14px;opacity:0;transition:.3s;transform:scale(.6);}
+  .combo-chip.show{opacity:1;transform:scale(1);}
+  .speaker-btn{margin-left:auto;}
+  .dots{display:flex;gap:6px;justify-content:center;margin:16px 0 4px;flex-wrap:wrap;}
+  .dot{width:16px;height:16px;border-radius:50%;background:#e9e2f8;border:2px solid #d6c9f2;}
+  .dot.ok{background:var(--green);border-color:#57d98e;}
+  .dot.bad{background:#ff8b8b;border-color:#ff6b6b;}
+  .dot.retry{background:var(--orange);border-color:#ff9e5e;}
+  .dot.cur{background:var(--yellow);border-color:#ffc531;transform:scale(1.25);}
+
+  .q-card{background:var(--card);border-radius:30px;padding:30px 20px 26px;text-align:center;margin-top:14px;
+    box-shadow:0 10px 28px rgba(161,134,255,.16);position:relative;overflow:hidden;}
+  .q-card:before{content:"";position:absolute;top:0;left:0;right:0;height:8px;
+    background:linear-gradient(90deg,var(--pink),var(--purple),var(--blue));}
+  .q-mascot{width:60px;height:60px;margin:0 auto 4px;display:block;}
+  .q-mascot.happy{animation:jump .55s ease-out;}
+  .q-mascot.think{animation:ppNod .8s ease-in-out;}
+  @keyframes jump{0%,100%{transform:translateY(0);}40%{transform:translateY(-16px) rotate(-8deg);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+  .q-text{font-size:44px;font-weight:900;letter-spacing:3px;margin:10px 0 4px;color:var(--ink);}
+  .q-feedback{min-height:46px;font-size:16px;font-weight:700;margin-top:6px;}
+  .q-feedback.good{color:#3aa76d;} .q-feedback.bad{color:#ff6b6b;}
+
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+  .choice{border:none;font-family:inherit;font-size:30px;font-weight:900;color:#fff;cursor:pointer;
+    padding:20px 8px;border-radius:22px;transition:.15s;position:relative;overflow:hidden;}
+  .choice:nth-child(1){background:linear-gradient(135deg,#ff8fab,#ff6b9d);}
+  .choice:nth-child(2){background:linear-gradient(135deg,#6ec1ff,#4a9fe8);}
+  .choice:nth-child(3){background:linear-gradient(135deg,#7ee081,#4fc963);}
+  .choice:nth-child(4){background:linear-gradient(135deg,#ffce6e,#ffab40);}
+  .choice:active{transform:scale(.94);}
+  .choice.correct{animation:popIn .4s;box-shadow:0 0 0 5px #fff,0 0 24px 8px rgba(126,224,129,.8);}
+  .choice.wrong{animation:shake .45s;filter:grayscale(.6);opacity:.7;}
+  .choice:disabled{cursor:default;}
+  @keyframes popIn{0%{transform:scale(1);}50%{transform:scale(1.12);}100%{transform:scale(1);}}
+
+  /* ---------- result ---------- */
+  .result-stars{text-align:center;font-size:56px;letter-spacing:6px;margin:10px 0;}
+  .result-stars span{display:inline-block;opacity:.25;transform:scale(.5);transition:.4s;}
+  .result-stars span.lit{opacity:1;transform:scale(1);animation:popIn .5s;}
+  .chest-wrap{text-align:center;margin:10px 0;}
+  .chest{font-size:96px;display:inline-block;cursor:pointer;animation:chestShake 1.8s infinite;transition:.3s;}
+  @keyframes chestShake{0%,100%{transform:rotate(0);}20%{transform:rotate(-5deg);}40%{transform:rotate(5deg);}60%{transform:rotate(-3deg);}80%{transform:rotate(3deg);}}
+  .chest.opened{animation:popIn .6s;transform:scale(1.15);}
+  .sticker-reveal{width:160px;height:160px;display:none;margin:6px auto;animation:popIn .7s;}
+  .sticker-reveal.show{display:block;}
+  .tap-hint{color:#9a8fb0;font-size:14px;text-align:center;animation:fadeIn 1s infinite alternate;}
+
+  /* ---------- album ---------- */
+  .album-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:8px;}
+  .sticker-slot{position:relative;aspect-ratio:1;border-radius:18px;background:#faf7ff;border:3px dashed #e2d7f7;
+    display:flex;align-items:center;justify-content:center;padding:12% 12% 20%;}
+  .sticker-slot .stk{width:100%;height:auto;}
+  .slot-name{position:absolute;bottom:3px;left:2px;right:2px;font-size:10px;font-weight:700;
+    color:#8d7fa8;text-align:center;line-height:1.1;}
+  .sticker-slot.got{border-style:solid;border-color:var(--yellow);background:linear-gradient(160deg,#fffbe8,#fff0f5);
+    animation:popIn .4s;}
+  .sticker-slot.special.got{border-color:#ffce6e;background:linear-gradient(160deg,#fff3d0,#ffe3ee);
+    box-shadow:0 4px 12px rgba(255,206,110,.5);}
+  .sticker-slot .qmark{color:#d6c9f2;font-size:26px;font-weight:900;}
+
+  /* ---------- 乘法表 / 除法表 ---------- */
+  .tabs{display:flex;gap:8px;margin-bottom:10px;}
+  .tab{flex:1;border:none;font-family:inherit;font-size:16px;font-weight:800;cursor:pointer;
+    padding:10px;border-radius:16px;background:#f1ecfb;color:#9a8fb0;transition:.2s;}
+  .tab.active{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;
+    box-shadow:0 4px 12px rgba(161,134,255,.35);}
+  .table-note{text-align:center;color:#b7aacd;font-size:12px;margin-bottom:10px;}
+  .table-wrap{width:100%;}
+  .math-table{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;width:100%;}
+  .mt-head{background:linear-gradient(135deg,var(--purple),var(--blue));color:#fff;
+    border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;aspect-ratio:1;}
+  .mt-cell{border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:700;aspect-ratio:1;cursor:pointer;transition:.15s;border:none;
+    font-family:inherit;color:var(--ink);}
+  .mt-cell:active{transform:scale(.88);}
+  .mt-cell.hl{outline:3px solid var(--yellow);outline-offset:-1px;transform:scale(1.1);z-index:2;
+    box-shadow:0 4px 10px rgba(255,209,102,.5);}
+  .mt-cell.square{font-weight:900;position:relative;}
+  .mt-cell.square:after{content:"✦";position:absolute;top:1px;right:4px;font-size:8px;color:#ff8fab;}
+  .div-table{display:grid;grid-template-columns:repeat(9,1fr);gap:4px;width:100%;}
+  .div-row-label{grid-column:1 / -1;font-size:13px;font-weight:800;color:#8d7fa8;margin:6px 0 0 2px;}
+  .div-chip{border:none;font-family:inherit;border-radius:12px;padding:5px 2px;cursor:pointer;
+    font-size:11px;font-weight:700;color:var(--ink);transition:.15s;line-height:1.25;
+    text-align:center;word-break:keep-all;}
+  .div-chip:active{transform:scale(.9);}
+  .div-chip.hl{outline:3px solid var(--yellow);transform:scale(1.06);
+    box-shadow:0 4px 10px rgba(255,209,102,.5);}
+
+  /* ---------- SVG 贴纸通用尺寸 ---------- */
+  .stk{width:100%;height:100%;display:block;}
+  .stk-box{display:flex;align-items:center;justify-content:center;}
+  .node .stk-box{width:44px;height:44px;}
+
+  /* ---------- 吉祥物「皮皮」SVG ---------- */
+  .pipi{display:block;width:100%;height:100%;overflow:visible;}
+  .pipi .pp-eye{transform-box:fill-box;transform-origin:50% 50%;
+    animation:ppBlink 5.6s ease-in-out infinite;}
+  @keyframes ppBlink{0%,90%,100%{transform:scaleY(1);}93%,95.5%{transform:scaleY(.08);}}
+  @keyframes ppNod{0%,100%{transform:rotate(0);}25%{transform:rotate(-6deg);}75%{transform:rotate(6deg);}}
+  @keyframes ppTilt{0%,100%{transform:rotate(-2deg);}50%{transform:rotate(2deg);}}
+
+  /* ---------- confetti / particles ---------- */
+  .particle{position:fixed;top:-40px;font-size:26px;z-index:999;pointer-events:none;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(600deg);opacity:.7;}}
+
+  .footer-note{text-align:center;color:#b7aacd;font-size:12px;margin-top:24px;}
+  .row{display:flex;gap:10px;margin-top:14px;}
+  .row .btn{flex:1;font-size:16px;padding:13px;}
+  .btn.ghost{background:#f1ecfb;color:var(--purple);box-shadow:none;}
+</style>
+</head>
+<body>
+<div class="float-bg" id="floatBg"></div>
+<div class="app">
+
+  <!-- ============ TOP BAR ============ -->
+  <div class="topbar">
+    <div class="avatar" id="topMascot"></div>
+    <div class="tb-name">
+      <b id="tbName">小小冒险家</b>
+      <small id="tbSub">开始你的冒险吧！</small>
+    </div>
+    <div class="tb-stat"><b id="tbStars">0</b>⭐</div>
+    <div class="tb-stat"><b id="tbStickers">0</b>🏅</div>
+    <button class="icon-btn" id="soundBtn" title="音效开关">🔊</button>
+  </div>
+
+  <!-- ============ HOME / MAP ============ -->
+  <div class="screen active" id="scr-home">
+    <div class="home-grid">
+    <!-- 左栏：角色 + 进度 + 学习表格 -->
+    <div class="home-left">
+    <div class="hero">
+      <span class="mascot" id="heroMascot"></span>
+      <div class="bubble" id="heroBubble">你好呀！我是皮皮！今天也要加油闯关哦！💪<span class="en">Hi! I am Pipi — let's start today's adventure!</span></div>
+    </div>
+
+    <div class="day-progress">
+      <div class="big" id="dpText">第 1 天<span class="en">Day 1</span></div>
+      <div class="progress-track"><div class="progress-fill" id="dpFill" style="width:0%"></div></div>
+      <div class="big" id="dpPct">0%</div>
+    </div>
+
+    <div style="margin-top:16px">
+      <button class="btn" id="playTodayBtn">🌈 开始今天的冒险！<span class="en">Start today's adventure</span></button>
+    </div>
+    </div>
+
+    <!-- 右栏：冒险地图 -->
+    <div class="home-right">
+    <div class="card" style="padding:14px 16px;margin-top:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <b style="font-size:16px;">🗺️ 冒险地图（30天）<span class="en">Adventure Map · 30 Days</span></b>
+        <div style="display:flex;gap:8px;">
+          <button class="btn small ghost" id="albumBtn">🎁 我的贴纸<span class="en">My Stickers</span></button>
+          <button class="btn small ghost" id="homeResetBtn" style="color:#ff8b8b">🔄 重新开始<span class="en">Start Over</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="map" id="map">
+      <div class="map-path"></div>
+    </div>
+
+    <div class="footer-note">💪 每天一小步，30天成为乘除法小天才！<span class="en">A little every day — 30 days to become a times-table star!</span></div>
+    </div>
+
+    <!-- 学习小助手：乘法表 / 除法表（整行展开） -->
+    <div class="card home-tables" style="padding:16px;margin-top:20px;">
+      <div class="tabs">
+        <button class="tab active" id="tabMult">✖️ 乘法表<span class="en">Times Table</span></button>
+        <button class="tab" id="tabDiv">➗ 除法表<span class="en">Division Table</span></button>
+      </div>
+      <div class="table-note">👆 点一点格子，皮皮读给你听！带 ✦ 的是平方数哦～<span class="en">Tap any cell and Pipi will read it out. ✦ marks square numbers.</span></div>
+      <div class="table-wrap" id="multTableWrap"></div>
+      <div class="table-wrap" id="divTableWrap" style="display:none"></div>
+    </div>
+    </div>
+  </div>
+
+  <!-- ============ QUIZ ============ -->
+  <div class="screen" id="scr-quiz">
+    <div class="quiz-head">
+      <div class="day-chip" id="qDayChip">第 1 天</div>
+      <div class="combo-chip" id="comboChip">🔥 连击 x2</div>
+      <button class="icon-btn speaker-btn" id="speakBtn" title="读题">📢</button>
+    </div>
+    <div class="dots" id="dots"></div>
+
+    <div class="q-card">
+      <div class="q-mascot" id="qMascot"></div>
+      <div class="q-text" id="qText">3 × 4</div>
+      <div class="q-en" id="qEn">three times four</div>
+      <div class="q-feedback" id="qFeedback"></div>
+    </div>
+
+    <div class="choices" id="choices"></div>
+  </div>
+
+  <!-- ============ RESULT ============ -->
+  <div class="screen" id="scr-result">
+    <div class="card" style="text-align:center;margin-top:24px;">
+      <h1 class="title" style="margin:6px 0" id="resTitle">🎉 太棒了！</h1>
+      <div class="subtitle" id="resSub">答对 10 题！</div>
+      <div class="result-stars" id="resStars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+
+      <div class="chest-wrap" id="chestWrap">
+        <div class="chest" id="chest">🎁</div>
+        <div class="sticker-reveal" id="stickerReveal">🦄</div>
+        <div class="tap-hint" id="tapHint">👆 点一点，打开宝箱！<span class="en">Tap to open the chest!</span></div>
+      </div>
+
+      <div class="row">
+        <button class="btn ghost" id="backMapBtn1">🗺️ 回地图<span class="en">Map</span></button>
+        <button class="btn green" id="nextDayBtn">➡️ 下一天<span class="en">Next Day</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ALBUM ============ -->
+  <div class="screen" id="scr-album">
+    <div class="card" style="margin-top:20px;">
+      <h1 class="title" style="font-size:24px">🎁 我的贴纸收藏册<span class="en">My Sticker Album</span></h1>
+      <div class="subtitle" id="albumSub">已收集 0 / 30 张</div>
+      <div class="album-grid" id="albumGrid"></div>
+      <div class="row">
+        <button class="btn ghost" id="backMapBtn2">🗺️ 回地图<span class="en">Map</span></button>
+        <button class="btn ghost" id="resetBtn" style="color:#ff8b8b">🔄 重新开始<span class="en">Start Over</span></button>
+      </div>
+      <div class="footer-note">每完成一天冒险，就能开宝箱收集一张神奇贴纸！<br>每 5 天还能获得闪闪发光的⭐超级贴纸⭐哦！<span class="en">Finish a day, open the chest, collect a magic sticker!<br>Every 5 days you get a shiny super sticker.</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* =========================================================
+   乘除法冒险岛 —— 数据与状态
+========================================================= */
+const TOTAL_DAYS = 30;
+const QUESTIONS_PER_DAY = 10;
+/* ---- 贴纸：原创可爱卡通 SVG（公主/独角兽/动物城风/甜点/魔法主题）----
+   ※ 全部为原创手绘风格，灵感来自公主、独角兽、动物城等题材，未使用受版权保护的角色形象 */
+const STICKER_NAMES = ['粉红蝴蝶结','公主小皇冠','梦幻城堡','玻璃水晶鞋','红玫瑰','魔法仙女棒',
+  '彩虹独角兽','美人鱼尾巴','微笑小海豚','珍珠贝壳','兔子警官','小狐狸','抱抱树懒','绵绵小羊',
+  '芭蕾舞鞋','生日蛋糕','草莓冰淇淋','彩虹棒棒糖','甜甜圈','泰迪小熊','爱心气球','彩虹桥',
+  '闪亮星星','月亮公主','花园蝴蝶','小猫咪','圆滚滚熊猫','魔法水晶球','小火箭','冠军奖杯'];
+const STICKER_EN = ['Pink Bow','Princess Crown','Dream Castle','Glass Slipper','Red Rose','Magic Wand',
+  'Rainbow Unicorn','Mermaid Tail','Smiling Dolphin','Pearl Shell','Bunny Officer','Little Fox',
+  'Cuddly Sloth','Fluffy Lamb','Ballet Shoes','Birthday Cake','Strawberry Ice Cream','Rainbow Lollipop',
+  'Donut','Teddy Bear','Heart Balloon','Rainbow Bridge','Twinkle Star','Moon Princess','Garden Butterfly',
+  'Kitty Cat','Baby Panda','Crystal Ball','Little Rocket','Champion Trophy'];
+const STICKERS = [
+  // 1 蝴蝶结
+  `<svg viewBox="0 0 100 100" class="stk"><ellipse cx="32" cy="48" rx="21" ry="17" fill="#ff8fab" transform="rotate(-14 32 48)"/><ellipse cx="68" cy="48" rx="21" ry="17" fill="#ff8fab" transform="rotate(14 68 48)"/><path d="M40 60 L30 84 L46 76 Z" fill="#ffb3c7"/><path d="M60 60 L70 84 L54 76 Z" fill="#ffb3c7"/><circle cx="50" cy="48" r="10" fill="#ff6b9d"/><circle cx="46" cy="44" r="3" fill="#ffd1de"/></svg>`,
+  // 2 皇冠
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M16 74 L16 36 L34 54 L50 26 L66 54 L84 36 L84 74 Z" fill="#ffd166" stroke="#f0b429" stroke-width="3" stroke-linejoin="round"/><circle cx="50" cy="22" r="4.5" fill="#ff6b9d"/><circle cx="50" cy="66" r="5.5" fill="#ff6b9d"/><circle cx="31" cy="66" r="4.5" fill="#6ec1ff"/><circle cx="69" cy="66" r="4.5" fill="#7ee081"/></svg>`,
+  // 3 城堡
+  `<svg viewBox="0 0 100 100" class="stk"><rect x="30" y="42" width="40" height="42" fill="#cbb7ff"/><rect x="16" y="32" width="16" height="52" fill="#b39fff"/><rect x="68" y="32" width="16" height="52" fill="#b39fff"/><path d="M16 32 L24 16 L32 32 Z" fill="#ff8fab"/><path d="M68 32 L76 16 L84 32 Z" fill="#ff8fab"/><path d="M42 46 L58 46 L50 32 Z" fill="#ffd166"/><rect x="44" y="60" width="12" height="24" rx="6" fill="#7a5ea8"/><circle cx="24" cy="46" r="4" fill="#fff8e0"/><circle cx="76" cy="46" r="4" fill="#fff8e0"/><circle cx="24" cy="60" r="4" fill="#fff8e0"/><circle cx="76" cy="60" r="4" fill="#fff8e0"/></svg>`,
+  // 4 玻璃水晶鞋
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M30 22 L44 22 L46 54 Q62 56 76 66 Q82 71 77 77 L36 77 Q28 75 29 66 Z" fill="#dcefff" stroke="#8fb8e8" stroke-width="3" stroke-linejoin="round"/><path d="M36 77 Q56 70 78 77" stroke="#8fb8e8" stroke-width="3" fill="none"/><path d="M36 50 Q50 44 62 40" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="58" cy="48" r="5" fill="#ffd166"/></svg>`,
+  // 5 红玫瑰（超级贴纸）
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M50 46 L50 90" stroke="#5bbf6e" stroke-width="5" stroke-linecap="round"/><path d="M50 66 Q32 60 30 78 Q48 80 50 66 Z" fill="#7ee081"/><circle cx="50" cy="40" r="24" fill="#ff6b9d"/><path d="M50 18 Q64 28 58 42 Q52 54 42 46 Q34 38 42 30 Q50 24 54 34" fill="none" stroke="#ffb3c7" stroke-width="4" stroke-linecap="round"/><path d="M28 92 L46 86" stroke="#5bbf6e" stroke-width="4" stroke-linecap="round"/></svg>`,
+  // 6 魔法仙女棒
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M30 80 L66 42" stroke="#c9a06a" stroke-width="8" stroke-linecap="round"/><path d="M70 22 L74 36 L88 40 L74 44 L70 58 L66 44 L52 40 L66 36 Z" fill="#ffd166" stroke="#f0b429" stroke-width="2" stroke-linejoin="round"/><circle cx="32" cy="38" r="3.5" fill="#ff8fab"/><circle cx="80" cy="70" r="3.5" fill="#6ec1ff"/><circle cx="40" cy="60" r="2.5" fill="#c9b6ff"/></svg>`,
+  // 7 彩虹独角兽
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M42 34 L38 14 L54 28 Z" fill="#ffd166" stroke="#f0b429" stroke-width="2" stroke-linejoin="round"/><path d="M30 32 Q22 26 26 38 Q34 40 30 32 Z" fill="#fff5fb" stroke="#e9d5ee" stroke-width="2"/><ellipse cx="54" cy="58" rx="24" ry="25" fill="#fff5fb" stroke="#e9d5ee" stroke-width="2.5"/><path d="M32 40 Q18 56 30 78 Q22 58 36 46 Z" fill="#ffb3c7"/><path d="M36 44 Q24 58 36 76 Q28 60 42 50 Z" fill="#c9b6ff"/><path d="M42 48 Q34 60 44 72 Q36 62 48 54 Z" fill="#a8e6ff"/><circle cx="62" cy="54" r="3.5" fill="#5b4a6f"/><circle cx="48" cy="66" r="3" fill="#ffb3c7"/></svg>`,
+  // 8 美人鱼尾巴
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M50 12 Q64 40 60 60 Q58 74 50 82 Q42 74 40 60 Q36 40 50 12 Z" fill="#6ed3c9"/><path d="M50 76 Q28 82 20 64 Q34 70 44 78 Z" fill="#4fc3b8"/><path d="M50 76 Q72 82 80 64 Q66 70 56 78 Z" fill="#4fc3b8"/><circle cx="50" cy="36" r="4" fill="#bff2ec"/><circle cx="52" cy="48" r="3.5" fill="#bff2ec"/><circle cx="52" cy="60" r="3" fill="#bff2ec"/><path d="M34 92 Q50 86 66 92" stroke="#6ec1ff" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`,
+  // 9 微笑小海豚
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M16 60 Q32 28 66 32 Q86 36 88 50 Q70 62 46 64 Q28 66 16 60 Z" fill="#6ec1ff"/><path d="M58 34 L70 16 L78 36 Z" fill="#4aa8e8"/><path d="M16 60 Q24 72 36 70 Q26 66 22 58 Z" fill="#4aa8e8"/><circle cx="74" cy="44" r="3.5" fill="#fff"/><circle cx="74" cy="44" r="1.8" fill="#3a3a5c"/><path d="M38 52 Q50 48 62 52" stroke="#4aa8e8" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="30" cy="80" r="3" fill="#a8e6ff"/><circle cx="44" cy="86" r="2.5" fill="#a8e6ff"/></svg>`,
+  // 10 珍珠贝壳（超级贴纸）
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M50 82 Q16 76 16 46 Q16 28 50 28 Q84 28 84 46 Q84 76 50 82 Z" fill="#ffd9e8" stroke="#ffb3c7" stroke-width="2.5"/><path d="M50 28 L32 74 M50 28 L66 74 M50 28 L50 80" stroke="#ffb3c7" stroke-width="2.5"/><circle cx="50" cy="44" r="12" fill="#fffaf0" stroke="#f0e2c8" stroke-width="2"/><circle cx="45" cy="39" r="3.5" fill="#fff"/></svg>`,
+  // 11 兔子警官
+  `<svg viewBox="0 0 100 100" class="stk"><ellipse cx="38" cy="26" rx="7" ry="20" fill="#e9e2f2" transform="rotate(-8 38 26)"/><ellipse cx="62" cy="26" rx="7" ry="20" fill="#e9e2f2" transform="rotate(8 62 26)"/><ellipse cx="38" cy="26" rx="3.5" ry="14" fill="#ffc2d6" transform="rotate(-8 38 26)"/><ellipse cx="62" cy="26" rx="3.5" ry="14" fill="#ffc2d6" transform="rotate(8 62 26)"/><ellipse cx="50" cy="64" rx="25" ry="23" fill="#f7f3fb" stroke="#ddd2ea" stroke-width="2.5"/><path d="M25 46 Q50 30 75 46 L75 40 Q50 24 25 40 Z" fill="#4a7fd6"/><rect x="21" y="44" width="58" height="7" rx="3.5" fill="#3b6cc4"/><circle cx="41" cy="62" r="4.5" fill="#5b4a6f"/><circle cx="59" cy="62" r="4.5" fill="#5b4a6f"/><circle cx="50" cy="70" r="3.5" fill="#ffc2d6"/><path d="M45 76 Q50 80 55 76" stroke="#c98fb0" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`,
+  // 12 小狐狸
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M24 42 L18 16 L42 30 Z" fill="#ff9e5e"/><path d="M76 42 L82 16 L58 30 Z" fill="#ff9e5e"/><path d="M27 38 L24 24 L36 32 Z" fill="#3d2b3f"/><path d="M73 38 L76 24 L64 32 Z" fill="#3d2b3f"/><ellipse cx="50" cy="58" rx="26" ry="24" fill="#ff9e5e"/><path d="M50 68 Q38 82 50 84 Q62 82 50 68 Z" fill="#fff3e6"/><ellipse cx="26" cy="68" rx="11" ry="13" fill="#fff3e6"/><ellipse cx="74" cy="68" rx="11" ry="13" fill="#fff3e6"/><circle cx="40" cy="54" r="4" fill="#3d2b3f"/><circle cx="60" cy="54" r="4" fill="#3d2b3f"/><circle cx="39" cy="52" r="1.4" fill="#fff"/><circle cx="59" cy="52" r="1.4" fill="#fff"/><circle cx="50" cy="76" r="4" fill="#3d2b3f"/></svg>`,
+  // 13 抱抱树懒
+  `<svg viewBox="0 0 100 100" class="stk"><ellipse cx="50" cy="56" rx="28" ry="26" fill="#b9a7c9"/><path d="M22 44 Q28 22 50 24 Q72 22 78 44 Q64 38 50 38 Q36 38 22 44 Z" fill="#a08fb4"/><ellipse cx="50" cy="62" rx="18" ry="15" fill="#f0e8f7"/><circle cx="40" cy="52" r="9" fill="#7a6b8c"/><circle cx="60" cy="52" r="9" fill="#7a6b8c"/><circle cx="40" cy="52" r="3.5" fill="#fff"/><circle cx="60" cy="52" r="3.5" fill="#fff"/><path d="M44 70 Q50 76 56 70" stroke="#8c7d9e" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`,
+  // 14 绵绵小羊
+  `<svg viewBox="0 0 100 100" class="stk"><circle cx="32" cy="42" r="15" fill="#fff" stroke="#e9e2f2" stroke-width="2.5"/><circle cx="68" cy="42" r="15" fill="#fff" stroke="#e9e2f2" stroke-width="2.5"/><circle cx="50" cy="32" r="16" fill="#fff" stroke="#e9e2f2" stroke-width="2.5"/><circle cx="50" cy="50" r="22" fill="#fff" stroke="#e9e2f2" stroke-width="2.5"/><ellipse cx="50" cy="66" rx="16" ry="14" fill="#ffe6ef"/><circle cx="44" cy="64" r="3" fill="#5b4a6f"/><circle cx="56" cy="64" r="3" fill="#5b4a6f"/><circle cx="50" cy="70" r="3" fill="#ffb3c7"/><path d="M45 75 Q50 79 55 75" stroke="#d98cb0" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`,
+  // 15 芭蕾舞鞋（超级贴纸）
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M28 62 Q28 40 44 40 Q56 40 58 52 Q60 64 44 66 Z" fill="#ffc2d6" stroke="#f2a3bd" stroke-width="2.5"/><path d="M58 62 Q72 62 78 50" stroke="#f2a3bd" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M42 44 Q30 30 22 20" stroke="#ffb3c7" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M50 42 Q46 26 42 16" stroke="#ffb3c7" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M34 78 Q50 72 68 78" stroke="#f2a3bd" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`,
+  // 16 生日蛋糕
+  `<svg viewBox="0 0 100 100" class="stk"><rect x="24" y="54" width="52" height="28" rx="8" fill="#ffd9e8"/><path d="M24 60 Q34 68 44 60 Q54 52 64 60 Q72 66 76 62 L76 54 L24 54 Z" fill="#fff3f8"/><rect x="24" y="68" width="52" height="6" fill="#ffb3c7"/><rect x="47" y="36" width="6" height="18" rx="3" fill="#a186ff"/><path d="M50 32 Q55 22 50 14 Q45 22 50 32 Z" fill="#ffd166"/><circle cx="34" cy="80" r="2.5" fill="#ffd166"/><circle cx="50" cy="82" r="2.5" fill="#6ec1ff"/><circle cx="66" cy="80" r="2.5" fill="#7ee081"/></svg>`,
+  // 17 草莓冰淇淋
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M34 52 L50 90 L66 52 Z" fill="#e8b877" stroke="#d3a05c" stroke-width="2.5" stroke-linejoin="round"/><path d="M38 62 L50 86 M62 62 L50 86 M44 50 L56 74" stroke="#d3a05c" stroke-width="1.5"/><circle cx="42" cy="44" r="14" fill="#ffb3c7"/><circle cx="60" cy="46" r="13" fill="#fff3c4"/><circle cx="50" cy="32" r="14" fill="#c9b6ff"/><circle cx="50" cy="20" r="4.5" fill="#ff6b6b"/></svg>`,
+  // 18 彩虹棒棒糖
+  `<svg viewBox="0 0 100 100" class="stk"><rect x="47" y="58" width="6" height="34" rx="3" fill="#f2d9b8"/><circle cx="50" cy="42" r="26" fill="#ff8fab"/><path d="M50 42 Q62 42 62 30 Q62 18 50 18 Q36 18 36 30 Q36 44 50 46 Q68 48 68 34" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>`,
+  // 19 甜甜圈
+  `<svg viewBox="0 0 100 100" class="stk"><circle cx="50" cy="52" r="32" fill="#e8b877"/><circle cx="50" cy="50" r="27" fill="#ffb3c7"/><circle cx="50" cy="50" r="10" fill="#fffaf0"/><rect x="34" y="32" width="9" height="4" rx="2" fill="#6ec1ff" transform="rotate(-20 38 34)"/><rect x="58" y="30" width="9" height="4" rx="2" fill="#7ee081" transform="rotate(25 62 32)"/><rect x="60" y="60" width="9" height="4" rx="2" fill="#ffd166" transform="rotate(-15 64 62)"/><rect x="30" y="58" width="9" height="4" rx="2" fill="#c9b6ff" transform="rotate(18 34 60)"/><rect x="46" y="70" width="9" height="4" rx="2" fill="#ff8fab" transform="rotate(8 50 72)"/></svg>`,
+  // 20 泰迪小熊（超级贴纸）
+  `<svg viewBox="0 0 100 100" class="stk"><circle cx="27" cy="28" r="12" fill="#d8ab7c"/><circle cx="73" cy="28" r="12" fill="#d8ab7c"/><circle cx="27" cy="28" r="6" fill="#e8c9a0"/><circle cx="73" cy="28" r="6" fill="#e8c9a0"/><circle cx="50" cy="54" r="28" fill="#d8ab7c"/><ellipse cx="50" cy="66" rx="16" ry="13" fill="#f0dcc0"/><circle cx="40" cy="48" r="4.5" fill="#4a3b3b"/><circle cx="60" cy="48" r="4.5" fill="#4a3b3b"/><circle cx="39" cy="46" r="1.5" fill="#fff"/><circle cx="59" cy="46" r="1.5" fill="#fff"/><ellipse cx="50" cy="62" rx="5" ry="4" fill="#4a3b3b"/><path d="M44 72 Q50 78 56 72" stroke="#8a6a4a" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`,
+  // 21 爱心气球
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M50 76 C50 76 18 56 18 38 C18 26 30 20 38 25 C44 28 50 36 50 36 C50 36 56 28 62 25 C70 20 82 26 82 38 C82 56 50 76 50 76 Z" fill="#ff8fab"/><path d="M50 76 Q45 86 54 92" stroke="#c9a06a" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M38 36 Q43 30 50 32" stroke="#ffd1de" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>`,
+  // 22 彩虹桥
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M14 76 A36 36 0 0 1 86 76" fill="none" stroke="#ff8fab" stroke-width="8"/><path d="M23 76 A27 27 0 0 1 77 76" fill="none" stroke="#ffd166" stroke-width="8"/><path d="M32 76 A18 18 0 0 1 68 76" fill="none" stroke="#7ee081" stroke-width="8"/><path d="M41 76 A9 9 0 0 1 59 76" fill="none" stroke="#6ec1ff" stroke-width="8"/><ellipse cx="20" cy="78" rx="11" ry="7" fill="#fff"/><ellipse cx="80" cy="78" rx="11" ry="7" fill="#fff"/><ellipse cx="20" cy="78" rx="7" ry="4.5" fill="#eef4ff"/><ellipse cx="80" cy="78" rx="7" ry="4.5" fill="#eef4ff"/></svg>`,
+  // 23 闪亮星星
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M50 12 L58 40 L86 48 L58 56 L50 84 L42 56 L14 48 L42 40 Z" fill="#ffd166" stroke="#f0b429" stroke-width="2.5" stroke-linejoin="round"/><circle cx="50" cy="48" r="6" fill="#fff3c4"/><path d="M22 20 L30 24 L22 28 L14 24 Z" fill="#ff8fab"/><path d="M80 68 L88 72 L80 76 L72 72 Z" fill="#6ec1ff"/></svg>`,
+  // 24 月亮公主
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M58 16 A36 36 0 1 0 58 84 A28 28 0 1 1 58 16 Z" fill="#ffe08a" stroke="#f0b429" stroke-width="2.5" stroke-linejoin="round"/><path d="M76 24 L80 36 L92 40 L80 44 L76 56 L72 44 L60 40 L72 36 Z" fill="#ffd166"/><circle cx="34" cy="60" r="3" fill="#fff3c4"/></svg>`,
+  // 25 花园蝴蝶（超级贴纸）
+  `<svg viewBox="0 0 100 100" class="stk"><ellipse cx="30" cy="38" rx="18" ry="20" fill="#c9b6ff" transform="rotate(-20 30 38)"/><ellipse cx="70" cy="38" rx="18" ry="20" fill="#c9b6ff" transform="rotate(20 70 38)"/><ellipse cx="32" cy="66" rx="14" ry="16" fill="#ffb3c7" transform="rotate(20 32 66)"/><ellipse cx="68" cy="66" rx="14" ry="16" fill="#ffb3c7" transform="rotate(-20 68 66)"/><circle cx="26" cy="34" r="4" fill="#fff"/><circle cx="74" cy="34" r="4" fill="#fff"/><rect x="47" y="26" width="6" height="48" rx="3" fill="#5b4a6f"/><path d="M50 26 Q42 14 34 12" stroke="#5b4a6f" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M50 26 Q58 14 66 12" stroke="#5b4a6f" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`,
+  // 26 小猫咪
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M26 42 L20 16 L44 30 Z" fill="#ffc9a0"/><path d="M74 42 L80 16 L56 30 Z" fill="#ffc9a0"/><path d="M28 36 L25 24 L36 30 Z" fill="#ffb3c7"/><path d="M72 36 L75 24 L64 30 Z" fill="#ffb3c7"/><ellipse cx="50" cy="56" rx="27" ry="25" fill="#ffd7b5"/><circle cx="40" cy="52" r="4.5" fill="#5b4a6f"/><circle cx="60" cy="52" r="4.5" fill="#5b4a6f"/><circle cx="39" cy="50" r="1.5" fill="#fff"/><circle cx="59" cy="50" r="1.5" fill="#fff"/><circle cx="50" cy="64" r="3.5" fill="#ff8fab"/><path d="M45 70 Q50 74 55 70" stroke="#d98cb0" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M20 58 L34 61 M20 68 L34 67 M80 58 L66 61 M80 68 L66 67" stroke="#e0a878" stroke-width="2" stroke-linecap="round"/></svg>`,
+  // 27 圆滚滚熊猫
+  `<svg viewBox="0 0 100 100" class="stk"><circle cx="26" cy="26" r="12" fill="#4a3b5c"/><circle cx="74" cy="26" r="12" fill="#4a3b5c"/><circle cx="50" cy="54" r="30" fill="#fff"/><ellipse cx="38" cy="52" rx="9" ry="11" fill="#4a3b5c" transform="rotate(-12 38 52)"/><ellipse cx="62" cy="52" rx="9" ry="11" fill="#4a3b5c" transform="rotate(12 62 52)"/><circle cx="38" cy="52" r="3.5" fill="#fff"/><circle cx="62" cy="52" r="3.5" fill="#fff"/><ellipse cx="50" cy="70" rx="5" ry="4" fill="#4a3b5c"/><path d="M44 76 Q50 80 56 76" stroke="#4a3b5c" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="28" cy="66" r="5" fill="#ffb3c7" opacity=".6"/><circle cx="72" cy="66" r="5" fill="#ffb3c7" opacity=".6"/></svg>`,
+  // 28 魔法水晶球
+  `<svg viewBox="0 0 100 100" class="stk"><circle cx="50" cy="46" r="30" fill="#cfe8ff" stroke="#8fb8e8" stroke-width="2.5"/><path d="M50 28 L54 40 L66 44 L54 48 L50 60 L46 48 L34 44 L46 40 Z" fill="#ffd166"/><path d="M34 62 L42 54 L50 62 L58 54 L66 62 Z" fill="#c9b6ff"/><path d="M32 36 Q40 28 52 30" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/><rect x="30" y="76" width="40" height="10" rx="5" fill="#a186ff"/></svg>`,
+  // 29 小火箭
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M50 10 Q66 32 66 54 L34 54 Q34 32 50 10 Z" fill="#fff" stroke="#d9cdf0" stroke-width="2.5"/><circle cx="50" cy="36" r="8" fill="#6ec1ff" stroke="#8fb8e8" stroke-width="2.5"/><path d="M34 46 L20 68 L34 62 Z" fill="#ff8fab"/><path d="M66 46 L80 68 L66 62 Z" fill="#ff8fab"/><path d="M42 54 L58 54 L54 76 L46 76 Z" fill="#ffd166"/><path d="M50 76 Q53 86 50 94 Q47 86 50 76 Z" fill="#ff9e5e"/></svg>`,
+  // 30 冠军奖杯（超级贴纸）
+  `<svg viewBox="0 0 100 100" class="stk"><path d="M32 18 L68 18 L66 44 Q64 58 50 58 Q36 58 34 44 Z" fill="#ffd166" stroke="#f0b429" stroke-width="2.5"/><path d="M32 24 L20 24 Q18 44 34 46" fill="none" stroke="#f0b429" stroke-width="4" stroke-linecap="round"/><path d="M68 24 L80 24 Q82 44 66 46" fill="none" stroke="#f0b429" stroke-width="4" stroke-linecap="round"/><rect x="46" y="58" width="8" height="12" fill="#e8b877"/><rect x="30" y="70" width="40" height="11" rx="5" fill="#e8b877"/><rect x="26" y="81" width="48" height="9" rx="4.5" fill="#d3a05c"/><path d="M50 26 L53 35 L62 38 L53 41 L50 50 L47 41 L38 38 L47 35 Z" fill="#fff3c4"/></svg>`
+];
+const SPECIAL_DAYS = [5,10,15,20,25,30]; // 金色超级贴纸
+const SAVE_KEY = 'multDivAdventure_v1';
+
+const state = load() || {
+  name: '小小冒险家',
+  day: 1,                 // 当前应完成的天
+  stars: {},              // {day: 1-3}
+  stickers: [],           // 已收集贴纸的 day 数组
+  sound: true
+};
+
+function load(){
+  try{ return JSON.parse(localStorage.getItem(SAVE_KEY)); }catch(e){ return null; }
+}
+function save(){ localStorage.setItem(SAVE_KEY, JSON.stringify(state)); }
+
+/* =========================================================
+   音效（Web Audio，无需外部文件）
+========================================================= */
+let actx = null;
+function beep(freq, dur, delay=0, type='sine', vol=0.18){
+  if(!state.sound) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const t = actx.currentTime + delay;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t+dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t+dur+0.05);
+  }catch(e){}
+}
+const sfx = {
+  correct(){ beep(660,.12); beep(880,.16,.09); beep(1170,.2,.18); },
+  wrong(){ beep(220,.25,0,'sawtooth',.1); },
+  combo(n){ beep(740+n*80,.1); },
+  click(){ beep(520,.06,0,'triangle',.08); },
+  chest(){ [523,659,784,1047].forEach((f,i)=>beep(f,.22,i*.13)); },
+  finish(){ [523,659,784,659,784,1047].forEach((f,i)=>beep(f,.25,i*.14)); }
+};
+
+/* =========================================================
+   背景漂浮装饰
+========================================================= */
+(function(){
+  const bg = document.getElementById('floatBg');
+  const icons = ['⭐','✨','🎈','🌈','☁️','🌟'];
+  for(let i=0;i<10;i++){
+    const s = document.createElement('span');
+    s.textContent = icons[i%icons.length];
+    s.style.left = (Math.random()*95)+'%';
+    s.style.top = (Math.random()*100)+'%';
+    s.style.animationDelay = (Math.random()*8)+'s';
+    s.style.animationDuration = (6+Math.random()*6)+'s';
+    s.style.fontSize = (22+Math.random()*24)+'px';
+    bg.appendChild(s);
+  }
+})();
+
+/* =========================================================
+   题目生成器
+========================================================= */
+function ri(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+function genQuestion(day){
+  let text, ans;
+  if(day<=4){                                  // 乘法 2~5
+    const a=ri(2,5), b=ri(2,5);
+    text=`${a} × ${b}`; ans=a*b;
+  } else if(day<=8){                           // 乘法 2~9
+    const a=ri(2,9), b=ri(2,9);
+    text=`${a} × ${b}`; ans=a*b;
+  } else if(day<=12){                          // 除法（整除）
+    const q=ri(2,9), d=ri(2,9);
+    text=`${d*q} ÷ ${d}`; ans=q;
+  } else if(day<=16){                          // 乘除混合
+    if(Math.random()<.5){ const a=ri(2,9),b=ri(2,9); text=`${a} × ${b}`; ans=a*b; }
+    else { const q=ri(2,9),d=ri(2,9); text=`${d*q} ÷ ${d}`; ans=q; }
+  } else if(day<=22){                          // 复合运算①  a×b ± c
+    const a=ri(2,6), b=ri(2,6);
+    const plus = Math.random()<.5;
+    const c = plus ? ri(1,9) : ri(1, a*b-1);
+    text = plus ? `${a} × ${b} + ${c}` : `${a} × ${b} - ${c}`;
+    ans = plus ? a*b+c : a*b-c;
+  } else {                                     // 复合运算② 更多花样
+    const t = ri(1,4);
+    if(t===1){
+      const a=ri(3,9), b=ri(3,9), plus=Math.random()<.5;
+      const c = plus ? ri(1,9) : ri(1, a*b-1);
+      text = plus ? `${a} × ${b} + ${c}` : `${a} × ${b} - ${c}`;
+      ans = plus ? a*b+c : a*b-c;
+    } else if(t===2){
+      const q=ri(2,9), d=ri(2,9), plus=Math.random()<.5;
+      const c = plus ? ri(1,9) : ri(1, q-1);
+      text = plus ? `${d*q} ÷ ${d} + ${c}` : `${d*q} ÷ ${d} - ${c}`;
+      ans = plus ? q+c : q-c;
+    } else if(t===3){
+      const q=ri(2,9), d=ri(2,9), b=ri(2,5);
+      text=`${d*q} ÷ ${d} × ${b}`; ans=q*b;
+    } else {
+      const a=ri(2,9), b=ri(2,9), c=ri(1,9), plus=Math.random()<.5;
+      text = plus ? `${c} + ${a} × ${b}` : `${c} + ${a} × ${b}`;
+      ans = c + a*b;
+    }
+  }
+  return { text, ans, choices: makeChoices(ans) };
+}
+
+function makeChoices(ans){
+  const set = new Set([ans]);
+  const pool = [ans+1, ans-1, ans+2, ans-2, ans+10, ans-10, ans+3, ans-3, ans+5, ans-5];
+  // 打乱后依次尝试，凑够 4 个不同且 ≥0 的选项
+  pool.sort(()=>Math.random()-.5);
+  for(const v of pool){ if(set.size>=4) break; if(v>=0 && !set.has(v)) set.add(v); }
+  while(set.size<4){ const v = Math.max(0, ans + ri(-9,9)); if(!set.has(v)) set.add(v); }
+  return [...set].sort(()=>Math.random()-.5);
+}
+
+/* =========================================================
+   吉祥物「皮皮」—— 原创手绘 SVG 卡通（大眼 + 腮红 + 高光，迪士尼风）
+   mood: idle（默认）| happy（欢呼）| think（想一想）| champion（戴皇冠）
+========================================================= */
+let _ppUid = 0;
+function pipi(mood, cls){
+  mood = mood || 'idle';
+  const u = 'pp' + (++_ppUid) + '_';
+  const G = n => `url(#${u}${n})`;
+  const U = n => `${u}${n}`;
+
+  const defs = `<defs>
+    <linearGradient id="${U('head')}" x1="24%" y1="4%" x2="78%" y2="100%">
+      <stop offset="0%" stop-color="#FFFAE0"/><stop offset="36%" stop-color="#FFE483"/>
+      <stop offset="100%" stop-color="#F4AC24"/></linearGradient>
+    <linearGradient id="${U('body')}" x1="26%" y1="0%" x2="76%" y2="100%">
+      <stop offset="0%" stop-color="#FFEF9E"/><stop offset="52%" stop-color="#FFD454"/>
+      <stop offset="100%" stop-color="#EFA61A"/></linearGradient>
+    <linearGradient id="${U('beak')}" x1="18%" y1="0%" x2="82%" y2="100%">
+      <stop offset="0%" stop-color="#FFD089"/><stop offset="100%" stop-color="#EA7610"/></linearGradient>
+    <radialGradient id="${U('cheek')}" cx="50%" cy="46%" r="56%">
+      <stop offset="0%" stop-color="#FF7FA6" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#FF7FA6" stop-opacity="0"/></radialGradient>
+    <radialGradient id="${U('eye')}" cx="34%" cy="26%" r="88%">
+      <stop offset="0%" stop-color="#7A66A6"/><stop offset="48%" stop-color="#382D55"/>
+      <stop offset="100%" stop-color="#161128"/></radialGradient>
+    <linearGradient id="${U('crown')}" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF6C4"/><stop offset="46%" stop-color="#FFD24A"/>
+      <stop offset="100%" stop-color="#E49A00"/></linearGradient>
+  </defs>`;
+
+  const star = (x, y, s, c) =>
+    `<path transform="translate(${x} ${y}) scale(${s})" fill="${c}" d="M0 -10 C 1.7 -3.4, 3.6 -1.7, 10 0 C 3.6 1.7, 1.7 3.6, 0 10 C -1.7 3.6, -3.6 1.7, -10 0 C -3.6 -1.7, -1.7 -3.4, 0 -10 Z"/>`;
+
+  const feet = `<ellipse cx="80" cy="189" rx="16" ry="8.5" fill="${G('beak')}"/>
+    <ellipse cx="120" cy="189" rx="16" ry="8.5" fill="${G('beak')}"/>
+    <path d="M76 192 C 79 190, 81 190, 84 192" stroke="#C85C08" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".45"/>
+    <path d="M116 192 C 119 190, 121 190, 124 192" stroke="#C85C08" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".45"/>`;
+
+  const wings = mood === 'happy'
+    ? `<ellipse cx="44" cy="142" rx="14" ry="24" fill="${G('body')}" transform="rotate(-50 44 142)"/>
+       <ellipse cx="156" cy="142" rx="14" ry="24" fill="${G('body')}" transform="rotate(50 156 142)"/>
+       <path d="M34 116 C 27 109, 24 103, 23 96" stroke="#FFC93C" stroke-width="3.4" fill="none" stroke-linecap="round" opacity=".85"/>
+       <path d="M166 116 C 173 109, 176 103, 177 96" stroke="#FFC93C" stroke-width="3.4" fill="none" stroke-linecap="round" opacity=".85"/>`
+    : `<ellipse cx="48" cy="152" rx="15" ry="25" fill="${G('body')}" transform="rotate(-18 48 152)"/>
+       <ellipse cx="152" cy="152" rx="15" ry="25" fill="${G('body')}" transform="rotate(18 152 152)"/>`;
+
+  const body = `<ellipse cx="100" cy="150" rx="48" ry="38" fill="${G('body')}"/>
+    <ellipse cx="100" cy="155" rx="28" ry="22" fill="#FFF9DC" opacity=".4"/>`;
+
+  const tuft = mood === 'champion' ? '' : `
+    <path d="M92 44 C 86 28, 76 16, 64 12" stroke="#F5B02A" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M100 38 C 100 22, 103 12, 110 5" stroke="#F7B92F" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M108 44 C 116 30, 127 21, 139 20" stroke="#F5B02A" stroke-width="9" fill="none" stroke-linecap="round"/>`;
+
+  const head = `<circle cx="100" cy="84" r="52" fill="${G('head')}"/>
+    <ellipse cx="76" cy="58" rx="21" ry="12" fill="#fff" opacity=".45" transform="rotate(-26 76 58)"/>
+    <ellipse cx="134" cy="108" rx="12" ry="7" fill="#fff" opacity=".16" transform="rotate(-24 134 108)"/>`;
+
+  const crown = mood === 'champion'
+    ? `<path d="M60 46 L 70 24 L 86 40 L 100 16 L 114 40 L 130 24 L 140 46 Z"
+         fill="${G('crown')}" stroke="#D08E00" stroke-width="2.4" stroke-linejoin="round"/>
+       <rect x="57" y="43" width="86" height="12" rx="6" fill="${G('crown')}" stroke="#D08E00" stroke-width="2.4"/>
+       <circle cx="100" cy="13" r="4.6" fill="#FF8FAB" stroke="#E8678C" stroke-width="1.4"/>
+       <circle cx="70" cy="26" r="3" fill="#8FD6FF" stroke="#5FB4E0" stroke-width="1.2"/>
+       <circle cx="130" cy="26" r="3" fill="#B6F09C" stroke="#84C96A" stroke-width="1.2"/>`
+    : '';
+
+  const cheeks = `<ellipse cx="64" cy="107" rx="13" ry="9" fill="${G('cheek')}"/>
+    <ellipse cx="136" cy="107" rx="13" ry="9" fill="${G('cheek')}"/>`;
+
+  const eyesOpen = (dy, blink) => `<g${blink ? ' class="pp-eye"' : ''}>
+      <ellipse cx="76" cy="87" rx="15" ry="17.5" fill="${G('eye')}"/>
+      <circle cx="70" cy="${80 + dy}" r="6.2" fill="#fff" opacity=".95"/>
+      <circle cx="82" cy="${95.5 + dy}" r="2.8" fill="#fff" opacity=".55"/></g>
+    <g${blink ? ' class="pp-eye"' : ''}>
+      <ellipse cx="124" cy="87" rx="15" ry="17.5" fill="${G('eye')}"/>
+      <circle cx="118" cy="${80 + dy}" r="6.2" fill="#fff" opacity=".95"/>
+      <circle cx="130" cy="${95.5 + dy}" r="2.8" fill="#fff" opacity=".55"/></g>`;
+
+  const lashes = `<path d="M63 78 Q 52 74, 44 68" stroke="#241C3A" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M67 72.5 Q 57 63, 52 54" stroke="#241C3A" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M72 69.5 C 68 60, 66 54, 66 46" stroke="#241C3A" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M137 78 Q 148 74, 156 68" stroke="#241C3A" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M133 72.5 Q 143 63, 148 54" stroke="#241C3A" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M128 69.5 C 132 60, 134 54, 134 46" stroke="#241C3A" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+
+  const beakIdle = `<path d="M100 96.5 C 106.5 96.5, 111.5 99.6, 111.5 103 C 111.5 108.6, 106.4 113.6, 100 113.6 C 93.6 113.6, 88.5 108.6, 88.5 103 C 88.5 99.6, 93.5 96.5, 100 96.5 Z" fill="${G('beak')}"/>
+    <path d="M90.5 104.5 C 95 107, 105 107, 109.5 104.5" stroke="#D0600A" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".5"/>
+    <path d="M94.5 100 C 96.5 98.6, 100 98, 103 98.6" stroke="#FFE3AE" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".85"/>`;
+
+  const beakHappy = `<path d="M100 95 C 108.5 95, 115 99.4, 115 103.4 C 115 110.4, 108.2 116.4, 100 116.4 C 91.8 116.4, 85 110.4, 85 103.4 C 85 99.4, 91.5 95, 100 95 Z" fill="${G('beak')}"/>
+    <path d="M92.5 107 C 95 105.4, 105 105.4, 107.5 107 C 107.5 113.2, 104.4 117.6, 100 117.6 C 95.6 117.6, 92.5 113.2, 92.5 107 Z" fill="#B8480A" opacity=".78"/>
+    <path d="M96 112.4 C 97.6 110.6, 102.4 110.6, 104 112.4 C 104 116, 102.2 118.2, 100 118.2 C 97.8 118.2, 96 116, 96 112.4 Z" fill="#FF8FA8"/>`;
+
+  const beakThink = `<ellipse cx="100" cy="105" rx="7.6" ry="8.6" fill="${G('beak')}"/>
+    <ellipse cx="100" cy="105.5" rx="3.4" ry="3.8" fill="#B8480A" opacity=".42"/>
+    <path d="M95.8 101.6 C 96.8 100.6, 98.6 100.2, 100 100.6" stroke="#FFE3AE" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".85"/>`;
+
+  const thought = `<circle cx="148" cy="54" r="5" fill="#fff" opacity=".92" stroke="#E6DBF7" stroke-width="1.5"/>
+    <circle cx="162" cy="40" r="7.5" fill="#fff" opacity=".92" stroke="#E6DBF7" stroke-width="1.5"/>
+    <circle cx="177" cy="24" r="10" fill="#fff" opacity=".95" stroke="#E6DBF7" stroke-width="1.5"/>
+    <circle cx="172.5" cy="25" r="1.7" fill="#B7AACD"/><circle cx="176.5" cy="25" r="1.7" fill="#B7AACD"/>
+    <circle cx="180.5" cy="25" r="1.7" fill="#B7AACD"/>`;
+
+  let face;
+  if(mood === 'happy'){
+    face = cheeks
+      + `<path d="M62 91 C 66.5 79.5, 85.5 79.5, 90 91" stroke="#241C3A" stroke-width="5" fill="none" stroke-linecap="round"/>
+         <path d="M110 91 C 114.5 79.5, 133.5 79.5, 138 91" stroke="#241C3A" stroke-width="5" fill="none" stroke-linecap="round"/>`
+      + lashes + beakHappy
+      + star(30, 56, .95, '#FFD86B') + star(170, 48, .62, '#FFE9A8') + star(179, 112, .48, '#FFCFE0');
+  } else if(mood === 'think'){
+    face = cheeks + eyesOpen(-3.5, false) + lashes + beakThink + thought;
+  } else {
+    face = cheeks + eyesOpen(0, true) + lashes + beakIdle
+      + star(32, 60, .5, '#FFE9A8') + star(168, 126, .42, '#FFCFE0');
+  }
+
+  return `<svg class="pipi${cls ? ' ' + cls : ''}" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"
+    role="img" aria-label="皮皮">${defs}${feet}${wings}${body}${tuft}${head}${crown}${face}</svg>`;
+}
+
+/* =========================================================
+   屏幕切换
+========================================================= */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0});
+}
+
+/* =========================================================
+   首页 / 地图渲染
+========================================================= */
+const ENCOURAGE = [
+  ['今天也要元气满满哦！','You are full of energy today!'],
+  ['你是最棒的！🌟','You are the best!'],
+  ['小小数学家，冲呀！','Go, little mathematician!'],
+  ['皮皮相信你！💪','Pipi believes in you!'],
+  ['加油加油！🎉','Keep it up!']
+];
+
+function renderHome(){
+  // 顶栏
+  document.getElementById('tbName').textContent = state.name;
+  const totalStars = Object.values(state.stars).reduce((a,b)=>a+b,0);
+  document.getElementById('tbStars').textContent = totalStars;
+  document.getElementById('tbStickers').textContent = state.stickers.length;
+  document.getElementById('topMascot').innerHTML = pipi(state.day>30 ? 'champion' : 'idle');
+  document.getElementById('heroMascot').innerHTML = pipi(state.day>30 ? 'champion' : 'idle');
+  document.getElementById('tbSub').textContent = state.day>30
+    ? '30天全部完成！你是冠军！ · Champion!'
+    : `第 ${state.day} 天冒险 · Day ${state.day}`;
+  const bubble = document.getElementById('heroBubble');
+  if(state.day>30){
+    bubble.innerHTML = '哇！全部关卡都完成啦！你就是乘除法小天才！🏆' +
+      '<span class="en">Wow — you finished every level. You are a real math star!</span>';
+  }else{
+    const enc = ENCOURAGE[state.day % ENCOURAGE.length];
+    bubble.innerHTML = enc[0] + '<span class="en">' + enc[1] + '</span>';
+  }
+
+  // 进度条
+  const done = Math.min(state.day-1, TOTAL_DAYS);
+  const pct = Math.round(done/TOTAL_DAYS*100);
+  const dayLabel = Math.min(state.day, TOTAL_DAYS);
+  document.getElementById('dpText').innerHTML = `第 ${dayLabel} 天<span class="en">Day ${dayLabel}</span>`;
+  document.getElementById('dpPct').textContent = pct+'%';
+  document.getElementById('dpFill').style.width = pct+'%';
+
+  const playBtn = document.getElementById('playTodayBtn');
+  if(state.day>30){ playBtn.innerHTML='🏆 全部完成！再玩一次任意关卡<span class="en">All done! Replay any day</span>'; }
+  else{ playBtn.innerHTML = `🌈 开始第 ${state.day} 天的冒险！<span class="en">Start Day ${state.day}</span>`; }
+
+  // 地图
+  const map = document.getElementById('map');
+  map.querySelectorAll('.day-node').forEach(n=>n.remove());
+  for(let d=1; d<=TOTAL_DAYS; d++){
+    const node = document.createElement('div');
+    node.className = 'day-node ' + ((d%2===1)?'left':'right');
+    const doneDay = state.stars[d] > 0;
+    const isNow = d === state.day;
+    const locked = d > state.day;
+
+    const labelTxt = d<=4 ? ['乘法初体验 ✖️','Easy Times'] : d<=8 ? ['乘法大挑战 ✖️','Times Challenge'] :
+                     d<=12 ? ['除法来啦 ➗','Division Time'] : d<=16 ? ['乘除混合 🌀','Mixed Practice'] :
+                     d<=22 ? ['复合运算① 🎯','Two Steps ①'] : ['复合运算② 🚀','Two Steps ②'];
+
+    node.innerHTML = `
+      ${d%2===1?`<div class="node-label">${labelTxt[0]}<span class="en">${labelTxt[1]}</span></div>`:''}
+      <div class="node ${doneDay?'done':''} ${isNow?'now':''} ${locked?'locked':''}" data-day="${d}">
+        <div class="d">第${d}天</div>
+        <div class="e${locked?'':' stk-box'}">${locked?'🔒': STICKERS[d-1]}</div>
+        <div class="node-stars">${doneDay? '⭐'.repeat(state.stars[d]) : (isNow?'GO!':'')}</div>
+      </div>
+      ${d%2===0?`<div class="node-label">${labelTxt[0]}<span class="en">${labelTxt[1]}</span></div>`:''}`;
+    map.appendChild(node);
+  }
+  map.querySelectorAll('.node').forEach(n=>{
+    n.addEventListener('click', ()=>{
+      const d = +n.dataset.day;
+      if(d>state.day){ sfx.wrong(); return; }
+      sfx.click();
+      startDay(d);
+    });
+  });
+}
+
+document.getElementById('playTodayBtn').addEventListener('click', ()=>{
+  sfx.click();
+  startDay(Math.min(state.day, TOTAL_DAYS));
+});
+
+/* =========================================================
+   每日答题
+========================================================= */
+let quiz = null;
+
+function startDay(day){
+  const qs = [];
+  const seen = new Set();
+  while(qs.length < QUESTIONS_PER_DAY){
+    const q = genQuestion(day);
+    if(!seen.has(q.text)){ seen.add(q.text); qs.push(q); }
+  }
+  quiz = { day, qs, idx:0, correct:0, streak:0, maxStreak:0 };
+  document.getElementById('qDayChip').textContent = `第 ${day} 天 · Day ${day}`;
+  renderDots();
+  renderQuestion();
+  showScreen('scr-quiz');
+}
+
+function renderDots(){
+  const dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  quiz.qs.forEach((q,i)=>{
+    const d = document.createElement('div');
+    const cls = i<quiz.idx
+      ? (q.ok ? 'ok' : (q.retried ? 'retry' : 'bad'))
+      : '';
+    d.className = 'dot ' + cls + (i===quiz.idx ? ' cur' : '');
+    dots.appendChild(d);
+  });
+}
+
+/* 英文读法：4 × 5 - 10 → "four times five minus ten" */
+const EN_ONES = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven',
+  'twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const EN_TENS = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+function enNum(n){
+  if(n < 20) return EN_ONES[n];
+  const t = Math.floor(n/10), o = n % 10;
+  return EN_TENS[t] + (o ? '-' + EN_ONES[o] : '');
+}
+function enRead(text){
+  return text.split(/\s+/).map(tok=>{
+    if(/^\d+$/.test(tok)) return enNum(+tok);
+    if(tok === '×') return 'times';
+    if(tok === '÷') return 'divided by';
+    if(tok === '+') return 'plus';
+    if(tok === '-') return 'minus';
+    return tok;
+  }).join(' ');
+}
+
+function renderQuestion(){
+  const q = quiz.qs[quiz.idx];
+  document.getElementById('qMascot').innerHTML = pipi('idle');
+  document.getElementById('qMascot').className = 'q-mascot';
+  document.getElementById('qText').textContent = q.text + ' = ?';
+  document.getElementById('qEn').textContent = enRead(q.text);
+  document.getElementById('qFeedback').textContent='';
+  document.getElementById('qFeedback').className='q-feedback';
+
+  const box = document.getElementById('choices');
+  box.innerHTML='';
+  q.choices.forEach(v=>{
+    const b = document.createElement('button');
+    b.className='choice'; b.textContent=v;
+    b.addEventListener('click', ()=>answer(v, b));
+    box.appendChild(b);
+  });
+  renderDots();
+}
+
+function answer(v, btn){
+  const q = quiz.qs[quiz.idx];
+  const all = document.querySelectorAll('.choice');
+
+  if(v === q.ans){
+    // 答对（无论是否重试过都进入下一题；一次答对才计绿点/连击）
+    q.done = true;
+    all.forEach(b=>b.disabled=true);
+    btn.classList.add('correct');
+    const m = document.getElementById('qMascot');
+    m.innerHTML = pipi('happy'); m.classList.add('happy');
+    const fb = document.getElementById('qFeedback');
+
+    if(!q.retried){
+      q.ok = true; quiz.correct++; quiz.streak++;
+      quiz.maxStreak = Math.max(quiz.maxStreak, quiz.streak);
+      const cheers = [['太棒了！','Perfect!'],['真厉害！','Well done!'],['完全正确！','Exactly right!'],
+                      ['哇，好聪明！','So clever!'],['乘除法小达人！','Math whiz!']];
+      const ch = cheers[ri(0,cheers.length-1)];
+      fb.innerHTML = ch[0] + '<span class="en">' + ch[1] + '</span>';
+    }else{
+      fb.innerHTML = '答对了！真棒，继续加油！<span class="en">Correct! Keep it up!</span>';
+    }
+    fb.classList.add('good');
+    sfx.correct();
+    burstParticles(6);
+    if(!q.retried && quiz.streak>=2){
+      const chip = document.getElementById('comboChip');
+      chip.textContent = `🔥 连击 x${quiz.streak} · Combo`;
+      chip.classList.add('show');
+      sfx.combo(quiz.streak);
+    }
+
+    setTimeout(()=>{
+      quiz.idx++;
+      if(quiz.idx >= quiz.qs.length){ finishDay(); }
+      else{ renderQuestion(); }
+    }, 1200);
+  } else {
+    // 答错：不揭晓答案，鼓励孩子再选一次
+    q.retried = true; quiz.streak = 0;
+    btn.classList.add('wrong');
+    btn.disabled = true;               // 错的选项不能再选
+    all.forEach(b=>{ if(!b.classList.contains('wrong')) b.disabled = false; });
+    const m = document.getElementById('qMascot');
+    m.innerHTML = pipi('think'); m.classList.add('think');
+    const fb = document.getElementById('qFeedback');
+    const encourages = [['没关系，再试一次！','That\'s okay — try again!'],
+                        ['再想一想，你可以的！','Think again, you can do it!'],
+                        ['换个答案试试看～','Try a different answer!'],
+                        ['小提示：想一想乘法表哦！','Hint: think of the times table!'],
+                        ['别着急，慢慢选～','No rush — take your time!']];
+    const ec = encourages[ri(0,encourages.length-1)];
+    fb.innerHTML = ec[0] + '<span class="en">' + ec[1] + '</span>';
+    fb.className = 'q-feedback bad';
+    sfx.wrong();
+    document.getElementById('comboChip').classList.remove('show');
+  }
+}
+
+function finishDay(){
+  const {day, correct, qs} = quiz;
+  const stars = correct>=qs.length-1 ? 3 : correct>=qs.length-3 ? 2 : 1;
+  const isNew = !state.stars[day];
+
+  state.stars[day] = Math.max(state.stars[day]||0, stars);
+  const firstClear = !state.stickers.includes(day) && (day===state.day);
+  if(firstClear) state.stickers.push(day);
+  if(day===state.day && state.day<TOTAL_DAYS) state.day++;
+  save();
+  renderHome();
+
+  // 结果页
+  const bestZh = quiz.maxStreak>=3 ? `，最高连击 x${quiz.maxStreak} 🔥` : '';
+  const bestEn = quiz.maxStreak>=3 ? ` · best combo x${quiz.maxStreak}` : '';
+  document.getElementById('resSub').innerHTML =
+    `一次答对 ${correct} / ${qs.length} 题${bestZh}<span class="en">` +
+    `${correct} of ${qs.length} correct on the first try${bestEn}</span>`;
+  const rt = stars===3 ? ['🏆 完美通关！','Perfect!']
+           : stars===2 ? ['🎉 太棒了！','Great job!']
+           : ['💪 完成挑战！','Challenge complete!'];
+  document.getElementById('resTitle').innerHTML = rt[0] + `<span class="en">${rt[1]}</span>`;
+
+  const spans = document.querySelectorAll('#resStars span');
+  spans.forEach(s=>s.classList.remove('lit'));
+  document.getElementById('stickerReveal').classList.remove('show');
+  const chest = document.getElementById('chest');
+  chest.style.display='inline-block'; chest.classList.remove('opened');
+  document.getElementById('tapHint').style.display='block';
+  chest.dataset.day = day;
+  chest.dataset.newSticker = firstClear ? '1':'0';
+
+  showScreen('scr-result');
+  sfx.finish();
+  spans.forEach((s,i)=>{ if(i<stars) setTimeout(()=>s.classList.add('lit'), 400+i*350); });
+  burstParticles(20);
+}
+
+/* 宝箱点击 */
+document.getElementById('chest').addEventListener('click', function(){
+  if(this.classList.contains('opened')) return;
+  this.classList.add('opened');
+  sfx.chest();
+  const day = +this.dataset.day;
+  const isNew = this.dataset.newSticker==='1';
+  setTimeout(()=>{
+    this.style.display='none';
+    document.getElementById('tapHint').style.display='none';
+    const rv = document.getElementById('stickerReveal');
+    rv.innerHTML = STICKERS[day-1];
+    rv.classList.add('show');
+    const hint = document.getElementById('tapHint');
+    const sp = SPECIAL_DAYS.includes(day);
+    hint.innerHTML = isNew
+      ? `${sp?'✨超级金色贴纸✨':'新贴纸'}「${STICKER_NAMES[day-1]}」get！<span class="en">` +
+        `${sp?'Super golden sticker':'New sticker'} “${STICKER_EN[day-1]}” unlocked!</span>`
+      : `这是你已经收集过的「${STICKER_NAMES[day-1]}」哦～<span class="en">` +
+        `You already have “${STICKER_EN[day-1]}”.</span>`;
+    hint.style.display='block';
+    burstParticles(24);
+  }, 350);
+});
+
+document.getElementById('backMapBtn1').addEventListener('click', ()=>{ sfx.click(); showScreen('scr-home'); });
+document.getElementById('backMapBtn2').addEventListener('click', ()=>{ sfx.click(); showScreen('scr-home'); });
+document.getElementById('nextDayBtn').addEventListener('click', ()=>{
+  sfx.click();
+  const next = Math.min(state.day, TOTAL_DAYS);
+  startDay(next);
+});
+
+/* =========================================================
+   贴纸收藏册
+========================================================= */
+function renderAlbum(){
+  const grid = document.getElementById('albumGrid');
+  grid.innerHTML='';
+  let got=0;
+  for(let d=1; d<=TOTAL_DAYS; d++){
+    const has = state.stickers.includes(d) || state.stars[d]>0;
+    const special = SPECIAL_DAYS.includes(d);
+    const slot = document.createElement('div');
+    slot.className = 'sticker-slot' + (special?' special':'') + (has?' got':'');
+    slot.innerHTML = has
+      ? STICKERS[d-1] + `<span class="slot-name">${STICKER_NAMES[d-1]}` +
+        `<span class="en">${STICKER_EN[d-1]}</span></span>`
+      : '<span class="qmark">?</span>';
+    slot.title = `第 ${d} 天 · Day ${d} · ` +
+      (has ? STICKER_NAMES[d-1] + ' / ' + STICKER_EN[d-1] : '还没收集 / not collected yet');
+    if(has) got++;
+    grid.appendChild(slot);
+  }
+  document.getElementById('albumSub').innerHTML =
+    `已收集 ${got} / ${TOTAL_DAYS} 张贴纸<span class="en">${got} / ${TOTAL_DAYS} stickers collected</span>`;
+}
+document.getElementById('albumBtn').addEventListener('click', ()=>{ sfx.click(); renderAlbum(); showScreen('scr-album'); });
+function doReset(){
+  if(confirm('确定要重新开始吗？所有星星和贴纸都会消失，回到第 1 天哦！\n\nStart over? All stars and stickers will be lost.')){
+    localStorage.removeItem(SAVE_KEY);
+    state.day=1; state.stars={}; state.stickers=[];
+    save(); renderHome(); showScreen('scr-home');
+    burstParticles(10);
+  }
+}
+document.getElementById('homeResetBtn').addEventListener('click', doReset);
+document.getElementById('resetBtn').addEventListener('click', doReset);
+
+/* =========================================================
+   音效开关 / 读题
+========================================================= */
+document.getElementById('soundBtn').addEventListener('click', function(){
+  state.sound = !state.sound; save();
+  this.textContent = state.sound ? '🔊':'🔇';
+  if(state.sound) sfx.click();
+});
+document.getElementById('speakBtn').addEventListener('click', ()=>{
+  const t = document.getElementById('qText').textContent.replace('= ?','').trim();
+  const zh = t.replace(/×/g,' 乘以 ').replace(/÷/g,' 除以 ').replace(/\+/g,' 加 ').replace(/-/g,' 减 ');
+  speak(zh.replace(/\s+/g,' ')+'，等于多少？');
+});
+
+/* =========================================================
+   彩带粒子
+========================================================= */
+function burstParticles(n){
+  const icons = ['⭐','✨','🎉','🎈','💫','🌟'];
+  for(let i=0;i<n;i++){
+    const p = document.createElement('div');
+    p.className='particle';
+    p.textContent = icons[ri(0,icons.length-1)];
+    p.style.left = (5+Math.random()*90)+'%';
+    p.style.fontSize = (18+Math.random()*22)+'px';
+    p.style.animationDuration = (1.6+Math.random()*1.6)+'s';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 3400);
+  }
+}
+
+/* =========================================================
+   学习小助手：乘法表 / 除法表
+========================================================= */
+// ---- 挑选最自然的中文语音（优先真人感的嗓音）----
+let zhVoice = null;
+function pickVoice(){
+  if(!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices();
+  if(!vs.length) return;
+  const zh = vs.filter(v => /zh|cmn|Chinese/i.test(v.lang + ' ' + v.name));
+  if(!zh.length) return;
+  // 优先级：女声/童声感更强的自然语音
+  const prefer = ['晓晓','Xiaoxiao','云希','Yunxi','云健','Yunjian','婷婷','Tingting','Ting-Ting',
+                  '美佳','Meijia','Sinji','善怡','Lili','丽丽','惠惠','Huihui','雅婷','Yating'];
+  for(const p of prefer){
+    const found = zh.find(v => v.name.includes(p));
+    if(found){ zhVoice = found; return; }
+  }
+  zhVoice = zh.find(v => /zh[-_]CN/i.test(v.lang)) || zh[0];
+}
+if('speechSynthesis' in window){
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+}
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN';
+    u.rate = 0.88;      // 稍慢，适合小朋友
+    u.pitch = 1.12;     // 音调略高，更亲切
+    u.volume = 1;
+    if(zhVoice) u.voice = zhVoice;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+// 积分值 → 马卡龙色（粉→紫→蓝渐变，越大越蓝）
+function cellColor(p){
+  const hue = 330 - Math.min(1,(p-1)/80) * 190;   // 330°(粉) → 140°(青绿)
+  return `hsl(${hue}, 85%, 92%)`;
+}
+function renderMultTable(){
+  const wrap = document.getElementById('multTableWrap');
+  const grid = document.createElement('div');
+  grid.className = 'math-table';
+  // 表头行：角标 + 1..9
+  const corner = document.createElement('div');
+  corner.className='mt-head'; corner.textContent='×';
+  grid.appendChild(corner);
+  for(let b=1;b<=9;b++){
+    const h=document.createElement('div'); h.className='mt-head'; h.textContent=b;
+    grid.appendChild(h);
+  }
+  for(let a=1;a<=9;a++){
+    const h=document.createElement('div'); h.className='mt-head'; h.textContent=a;
+    grid.appendChild(h);
+    for(let b=1;b<=9;b++){
+      const c=document.createElement('button');
+      c.className='mt-cell'+(a===b?' square':'');
+      c.textContent=a*b;
+      c.dataset.a=a; c.dataset.b=b;
+      c.style.background=cellColor(a*b);
+      c.addEventListener('click', ()=>{
+        sfx.click();
+        // 高亮同一行/列，再点一次取消
+        const cells = grid.querySelectorAll('.mt-cell');
+        const wasHl = c.classList.contains('hl');
+        cells.forEach(x=>x.classList.remove('hl'));
+        if(!wasHl){
+          cells.forEach(x=>{
+            if(+x.dataset.a===a || +x.dataset.b===b) x.classList.add('hl');
+          });
+        }
+        speak(`${a} 乘以 ${b} 等于 ${a*b}`);
+      });
+      grid.appendChild(c);
+    }
+  }
+  wrap.innerHTML=''; wrap.appendChild(grid);
+}
+function renderDivTable(){
+  const wrap = document.getElementById('divTableWrap');
+  const grid = document.createElement('div');
+  grid.className = 'div-table';
+  for(let d=2; d<=9; d++){
+    const label = document.createElement('div');
+    label.className='div-row-label';
+    label.textContent = `除以 ${d} ➗`;
+    grid.appendChild(label);
+    for(let q=1; q<=9; q++){
+      const chip = document.createElement('button');
+      chip.className='div-chip';
+      chip.textContent = `${d*q}÷${d}=${q}`;
+      chip.style.background = cellColor(d*q);
+      chip.addEventListener('click', ()=>{
+        sfx.click();
+        const wasHl = chip.classList.contains('hl');
+        grid.querySelectorAll('.div-chip').forEach(x=>x.classList.remove('hl'));
+        if(!wasHl) chip.classList.add('hl');
+        speak(`${d*q} 除以 ${d} 等于 ${q}`);
+      });
+      grid.appendChild(chip);
+    }
+  }
+  wrap.innerHTML=''; wrap.appendChild(grid);
+}
+document.getElementById('tabMult').addEventListener('click', function(){
+  sfx.click();
+  this.classList.add('active'); document.getElementById('tabDiv').classList.remove('active');
+  document.getElementById('multTableWrap').style.display='';
+  document.getElementById('divTableWrap').style.display='none';
+});
+document.getElementById('tabDiv').addEventListener('click', function(){
+  sfx.click();
+  this.classList.add('active'); document.getElementById('tabMult').classList.remove('active');
+  document.getElementById('divTableWrap').style.display='';
+  document.getElementById('multTableWrap').style.display='none';
+});
+
+/* =========================================================
+   启动
+========================================================= */
+document.getElementById('soundBtn').textContent = state.sound ? '🔊':'🔇';
+renderHome();
+renderMultTable();
+renderDivTable();
+</script>
+</body>
+</html>
